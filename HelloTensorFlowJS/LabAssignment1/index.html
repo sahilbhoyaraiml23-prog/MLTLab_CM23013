@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lab Assignment 1 - Tensor Creation</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
+</head>
+<body>
+    <script>
+        console.log("Lab Assignment 1: Tensor Creation");
+
+        // Scalar
+        const scalar = tf.scalar(10);
+        scalar.print();
+
+        // Vector
+        const vector = tf.tensor1d([1, 2, 3, 4]);
+        vector.print();
+
+        // Matrix
+        const matrix = tf.tensor2d([
+            [1, 2],
+            [3, 4]
+        ]);
+        matrix.print();
+    </script>
+</body>
+</html>
