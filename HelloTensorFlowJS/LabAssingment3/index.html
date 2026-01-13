@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lab Assignment 3 - Reshape vs Flatten</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
+</head>
+<body>
+    <script>
+        console.log("Lab Assignment 3: Reshape and Flatten");
+
+        const tensor = tf.tensor2d([
+            [1, 2, 3],
+            [4, 5, 6]
+        ]);
+
+        console.log("Original Tensor:");
+        tensor.print();
+
+        // Reshape tensor
+        const reshaped = tensor.reshape([3, 2]);
+        console.log("Reshaped Tensor:");
+        reshaped.print();
+
+        // Flatten tensor
+        const flattened = tensor.flatten();
+        console.log("Flattened Tensor:");
+        flattened.print();
+    </script>
+</body>
+</html>

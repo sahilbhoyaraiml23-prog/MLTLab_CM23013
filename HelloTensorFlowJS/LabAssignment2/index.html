@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lab Assignment 2 - Vector Operations</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
+</head>
+<body>
+    <script>
+        console.log("Lab Assignment 2: Element-wise Operations");
+
+        const vectorA = tf.tensor1d([2, 4, 6]);
+        const vectorB = tf.tensor1d([1, 3, 5]);
+
+        // Element-wise Addition
+        const addition = tf.add(vectorA, vectorB);
+        addition.print();
+
+        // Element-wise Multiplication
+        const multiplication = tf.mul(vectorA, vectorB);
+        multiplication.print();
+    </script>
+</body>
+</html>
