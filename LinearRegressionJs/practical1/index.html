@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Linear Regression – Study Hours vs Score</title>
+
+<!-- TensorFlow.js -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.12.0/dist/tf.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+
+<style>
+body{
+  font-family: "Segoe UI", sans-serif;
+  background:#eef1f5;
+  display:flex;
+  justify-content:center;
+  padding:30px;
+}
+.card{
+  background:#ffffff;
+  padding:25px;
+  border-radius:10px;
+  width:680px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.15);
+}
+h2{
+  text-align:center;
+  color:#222;
+}
+.controls{
+  margin-top:15px;
+}
+input, button{
+  padding:8px;
+  margin-top:6px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+button{
+  background:#28a745;
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+}
+button:hover{ background:#1e7e34; }
+.result{
+  margin-top:10px;
+  font-weight:bold;
+}
+canvas{ margin-top:20px; }
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2><br>
+  Linear Regression using TensorFlow.js<br>
+  Study Hours vs Exam Score</h2>
+
+  <div class="controls">
+    <input type="file" id="dataFile" accept=".txt">
+    <button onclick="buildModel()">Train Model</button>
+  </div>
+
+  <div class="result" id="errorMetrics"></div>
+
+  <hr>
+
+  <input type="number" id="studyInput" placeholder="Enter study hours">
+  <button onclick="makePrediction()">Predict Score</button>
+
+  <div class="result" id="predictionResult"></div>
+
+  <canvas id="regressionChart"></canvas>
+</div>
+
+<script>
+let model;
+let inputs=[], outputs=[];
+let inputsNorm=[], outputsNorm=[];
+let minX, maxX, minY, maxY;
+let predictions=[];
+let chartRef;
+
+// TRAIN MODEL
+function buildModel(){
+  const file = document.getElementById("dataFile").files[0];
+  if(!file) return alert("Upload a TXT file first");
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const rows = e.target.result.trim().split("\n");
+
+    inputs=[]; outputs=[];
+    rows.forEach(row=>{
+      const [a,b] = row.trim().split(/[\s,]+/).map(Number);
+      if(!isNaN(a) && !isNaN(b)){
+        inputs.push(a);
+        outputs.push(b);
+      }
+    });
+
+    minX=Math.min(...inputs); maxX=Math.max(...inputs);
+    minY=Math.min(...outputs); maxY=Math.max(...outputs);
+
+    inputsNorm = inputs.map(v=>(v-minX)/(maxX-minX));
+    outputsNorm = outputs.map(v=>(v-minY)/(maxY-minY));
+
+    model = tf.sequential();
+    model.add(tf.layers.dense({units:1, inputShape:[1]}));
+    model.compile({
+      optimizer: tf.train.sgd(0.1),
+      loss: "meanSquaredError"
+    });
+
+    model.fit(
+      tf.tensor2d(inputsNorm,[inputsNorm.length,1]),
+      tf.tensor1d(outputsNorm),
+      { epochs:250, callbacks:{ onTrainEnd: onTrainingComplete } }
+    );
+  };
+  reader.readAsText(file);
+}
+
+// AFTER TRAINING
+function onTrainingComplete(){
+  const predNorm = model
+    .predict(tf.tensor2d(inputsNorm,[inputsNorm.length,1]))
+    .dataSync();
+
+  predictions = Array.from(predNorm).map(v=>v*(maxY-minY)+minY);
+
+  let mse=0, mae=0;
+  for(let i=0;i<outputs.length;i++){
+    mse += Math.pow(outputs[i]-predictions[i],2);
+    mae += Math.abs(outputs[i]-predictions[i]);
+  }
+  mse/=outputs.length; mae/=outputs.length;
+
+  document.getElementById("errorMetrics").innerText =
+    `Model Error → MSE: ${mse.toFixed(2)} | MAE: ${mae.toFixed(2)}`;
+
+  plotGraph();
+}
+
+// PREDICTION
+function makePrediction(){
+  if(!model) return alert("Train the model first");
+
+  const val = parseFloat(document.getElementById("studyInput").value);
+  if(isNaN(val)) return alert("Enter valid number");
+
+  const vNorm = (val-minX)/(maxX-minX);
+  const yNorm = model.predict(tf.tensor2d([vNorm],[1,1])).dataSync()[0];
+  const yFinal = yNorm*(maxY-minY)+minY;
+
+  document.getElementById("predictionResult").innerText =
+    `Predicted Score: ${yFinal.toFixed(2)}`;
+}
+
+// GRAPH
+function plotGraph(){
+  if(chartRef) chartRef.destroy();
+
+  chartRef = new Chart(
+    document.getElementById("regressionChart"),
+    {
+      type:"scatter",
+      data:{
+        datasets:[
+          {
+            label:"Actual Data",
+            data:inputs.map((x,i)=>({x, y:outputs[i]})),
+            backgroundColor:"#007bff"
+          },
+          {
+            label:"Predicted Line",
+            data:inputs.map((x,i)=>({x, y:predictions[i]})),
+            type:"line",
+            borderColor:"#dc3545",
+            fill:false
+          }
+        ]
+      },
+      options:{
+        scales:{
+          x:{ title:{display:true, text:"Study Hours"} },
+          y:{ title:{display:true, text:"Exam Score"} }
+        }
+      }
+    }
+  );
+}
+</script>
+</body>
+</html>

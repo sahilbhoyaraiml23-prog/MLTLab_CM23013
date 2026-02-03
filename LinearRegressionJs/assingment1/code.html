@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Task 1 - Regression Training</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
+  <style>
+    body { font-family: Arial; text-align: center; }
+    canvas { border: 1px solid black; margin-top: 15px; }
+  </style>
+</head>
+<body>
+
+<h2>Task 1: Linear Regression Training</h2>
+<button onclick="trainModel()">Train Model</button>
+
+<p id="summary"></p>
+<canvas id="graph" width="500" height="400"></canvas>
+
+<script>
+async function trainModel() {
+  console.log("=== Task 1 Started ===");
+
+  const xs = [], ys = [];
+  for (let i = 0; i < 100; i++) {
+    let x = Math.random() * 10;
+    xs.push(x);
+    ys.push(2 * x + 5 + Math.random());
+  }
+
+  const xT = tf.tensor2d(xs, [100, 1]);
+  const yT = tf.tensor2d(ys, [100, 1]);
+
+  const model = tf.sequential();
+  model.add(tf.layers.dense({ units: 1, inputShape: [1] }));
+  model.compile({
+    optimizer: tf.train.sgd(0.01),
+    loss: "meanSquaredError"
+  });
+
+  const epochs = 30;
+
+  const history = await model.fit(xT, yT, {
+    epochs,
+    callbacks: {
+      onEpochEnd: (epoch, logs) => {
+        console.log(`Epoch ${epoch + 1}/${epochs} - Loss: ${logs.loss}`);
+      }
+    }
+  });
+
+  const finalLoss = history.history.loss.slice(-1)[0];
+  console.log("Training completed");
+  console.log("Final Loss:", finalLoss);
+
+  document.getElementById("summary").innerText =
+    `Epochs: ${epochs} | Final Loss: ${finalLoss.toFixed(4)}`;
+
+  const preds = model.predict(xT).dataSync();
+  drawGraph(xs, ys, preds);
+}
+
+function drawGraph(xs, ys, preds) {
+  const c = document.getElementById("graph");
+  const ctx = c.getContext("2d");
+  ctx.clearRect(0, 0, c.width, c.height);
+
+  const maxX = Math.max(...xs);
+  const maxY = Math.max(...ys);
+
+  ctx.fillStyle = "blue"; // actual
+  xs.forEach((x, i) => {
+    ctx.beginPath();
+    ctx.arc((x/maxX)*c.width, c.height-(ys[i]/maxY)*c.height, 3, 0, 6.28);
+    ctx.fill();
+  });
+
+  ctx.fillStyle = "red"; // predicted
+  xs.forEach((x, i) => {
+    ctx.beginPath();
+    ctx.arc((x/maxX)*c.width, c.height-(preds[i]/maxY)*c.height, 3, 0, 6.28);
+    ctx.fill();
+  });
+}
+</script>
+
+</body>
+</html>

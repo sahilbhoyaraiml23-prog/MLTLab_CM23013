@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Task 2 - Learning Rate Comparison</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
+  <style>
+    body { font-family: Arial; text-align: center; }
+    canvas { border: 1px solid black; margin-top: 20px; }
+  </style>
+</head>
+
+<body>
+
+<h2>Task 2: Learning Rate vs Convergence</h2>
+<button onclick="runExperiment()">Run Experiment</button>
+
+<p id="summary"></p>
+<canvas id="chart" width="550" height="400"></canvas>
+
+<script>
+async function runExperiment() {
+
+  console.clear();
+  console.log("=== Learning Rate Convergence Comparison ===");
+
+  // Synthetic data
+  const xs = [], ys = [];
+  for (let i = 0; i < 100; i++) {
+    let x = Math.random() * 10;
+    xs.push(x);
+    ys.push(3 * x + 4 + Math.random());
+  }
+
+  const xTensor = tf.tensor2d(xs, [100, 1]);
+  const yTensor = tf.tensor2d(ys, [100, 1]);
+
+  const learningRates = [0.001, 0.01, 0.1];
+  const epochs = 30;
+  const lossHistory = {};
+
+  let summaryText = "Final Loss → ";
+
+  for (let lr of learningRates) {
+
+    console.log(`\n--- Learning Rate = ${lr} ---`);
+
+    const model = tf.sequential();
+    model.add(tf.layers.dense({ units: 1, inputShape: [1] }));
+    model.compile({
+      optimizer: tf.train.sgd(lr),
+      loss: "meanSquaredError"
+    });
+
+    lossHistory[lr] = [];
+
+    const history = await model.fit(xTensor, yTensor, {
+      epochs,
+      callbacks: {
+        onEpochEnd: (epoch, logs) => {
+          lossHistory[lr].push(logs.loss);
+          console.log(`Epoch ${epoch + 1}: Loss = ${logs.loss.toFixed(4)}`);
+        }
+      }
+    });
+
+    const finalLoss = history.history.loss.slice(-1)[0];
+    summaryText += `LR ${lr}: ${finalLoss.toFixed(4)} | `;
+  }
+
+  document.getElementById("summary").innerText =
+    `Epochs: ${epochs} | ${summaryText}`;
+
+  drawComparison(lossHistory, epochs);
+}
+
+// Draw convergence comparison graph
+function drawComparison(history, epochs) {
+
+  const canvas = document.getElementById("chart");
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const colors = {
+    "0.001": "blue",
+    "0.01": "green",
+    "0.1": "red"
+  };
+
+  const maxLoss = Math.max(
+    ...Object.values(history).flat()
+  );
+
+  Object.keys(history).forEach(lr => {
+    ctx.beginPath();
+    ctx.strokeStyle = colors[lr];
+
+    history[lr].forEach((loss, i) => {
+      let x = (i / epochs) * canvas.width;
+      let y = canvas.height - (loss / maxLoss) * canvas.height;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+
+    ctx.stroke();
+    ctx.fillText(`LR ${lr}`, 10, 20 + Object.keys(colors).indexOf(lr) * 15);
+  });
+}
+</script>
+
+</body>
+</html>

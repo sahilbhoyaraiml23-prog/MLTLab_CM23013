@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Task 3 - Unseen Data Prediction</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+    }
+    table {
+      margin: auto;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid black;
+      padding: 8px 12px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Task 3: Prediction on Unseen Inputs</h2>
+<button onclick="runPrediction()">Predict</button>
+
+<p id="summary"></p>
+
+<table id="resultTable">
+  <thead>
+    <tr>
+      <th>Input (x)</th>
+      <th>Expected Output</th>
+      <th>Predicted Output</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+async function runPrediction() {
+
+  console.clear();
+  console.log("=== Task 3: Unseen Input Prediction ===");
+
+  // 1️⃣ Training data
+  const xs = [];
+  const ys = [];
+  for (let i = 0; i < 100; i++) {
+    let x = Math.random() * 10;
+    xs.push(x);
+    ys.push(2 * x + 5 + (Math.random() - 0.5));
+  }
+
+  const xTensor = tf.tensor2d(xs, [xs.length, 1]);
+  const yTensor = tf.tensor2d(ys, [ys.length, 1]);
+
+  // 2️⃣ Model
+  const model = tf.sequential();
+  model.add(tf.layers.dense({ units: 1, inputShape: [1] }));
+  model.compile({
+    optimizer: tf.train.sgd(0.01),
+    loss: "meanSquaredError"
+  });
+
+  const epochs = 30;
+
+  // 3️⃣ Training with console logs
+  const history = await model.fit(xTensor, yTensor, {
+    epochs,
+    callbacks: {
+      onEpochEnd: (epoch, logs) => {
+        console.log(`Epoch ${epoch + 1}/${epochs} | Loss: ${logs.loss.toFixed(4)}`);
+      }
+    }
+  });
+
+  const finalLoss = history.history.loss.slice(-1)[0];
+  console.log("Final Training Loss:", finalLoss);
+
+  // 4️⃣ Unseen inputs
+  const unseenX = [12, 15, 20];
+  const expectedY = unseenX.map(x => 2 * x + 5);
+
+  const predictions = model
+    .predict(tf.tensor2d(unseenX, [unseenX.length, 1]))
+    .dataSync();
+
+  console.log("Unseen Inputs:", unseenX);
+  console.log("Expected Outputs:", expectedY);
+  console.log("Predicted Outputs:", predictions);
+
+  // 5️⃣ HTML summary
+  document.getElementById("summary").innerText =
+    `Epochs: ${epochs} | Final Loss: ${finalLoss.toFixed(4)}`;
+
+  // 6️⃣ Fill table
+  const tbody = document.querySelector("#resultTable tbody");
+  tbody.innerHTML = "";
+
+  unseenX.forEach((x, i) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${x}</td>
+      <td>${expectedY[i].toFixed(2)}</td>
+      <td>${predictions[i].toFixed(2)}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+</script>
+
+</body>
+</html>
