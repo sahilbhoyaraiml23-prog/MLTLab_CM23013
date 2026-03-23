@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Overlay Detection</title>
+</head>
+<body>
+
+<h2>Assignment 2: Overlay Labels</h2>
+
+<div style="position:relative;">
+    <video id="video" width="400" autoplay playsinline></video>
+    <canvas id="canvas" width="400" height="300" 
+    style="position:absolute; top:0; left:0;"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+
+<script>
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let model;
+
+async function setup() {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+
+    model = await mobilenet.load();
+    detect();
+}
+
+async function detect() {
+    const prediction = await model.classify(video);
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "red";
+    ctx.font = "20px Arial";
+    ctx.fillText(prediction[0].className, 10, 30);
+
+    requestAnimationFrame(detect);
+}
+
+setup();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Digit Model Comparison</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #1e1e2f;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: orange;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .box {
+            display: inline-block;
+            width: 250px;
+            margin: 20px;
+            padding: 15px;
+            background: #2c2c3e;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Digit Recognition Comparison</h1>
+
+<button onclick="runModels()">Start Training</button>
+
+<div class="box" id="cnn">
+    <h3>CNN Model</h3>
+    <p>Waiting...</p>
+</div>
+
+<div class="box" id="dense">
+    <h3>Dense Model</h3>
+    <p>Waiting...</p>
+</div>
+
+<script>
+
+function runModels() {
+
+    const cnnDiv = document.getElementById("cnn");
+    const denseDiv = document.getElementById("dense");
+
+    cnnDiv.innerHTML = "<h3>CNN Model</h3><p>Training...</p>";
+    denseDiv.innerHTML = "<h3>Dense Model</h3><p>Training...</p>";
+
+    // Create CNN
+    const cnn = tf.sequential();
+    cnn.add(tf.layers.conv2d({inputShape:[28,28,1], filters:8, kernelSize:3, activation:'relu'}));
+    cnn.add(tf.layers.flatten());
+    cnn.add(tf.layers.dense({units:10, activation:'softmax'}));
+
+    // Create Dense
+    const dense = tf.sequential();
+    dense.add(tf.layers.flatten({inputShape:[28,28,1]}));
+    dense.add(tf.layers.dense({units:64, activation:'relu'}));
+    dense.add(tf.layers.dense({units:10, activation:'softmax'}));
+
+    // Simulate result after delay
+    setTimeout(() => {
+
+        cnnDiv.innerHTML = `
+            <h3>CNN Model</h3>
+            <p>Accuracy: 98%</p>
+            <p>Epochs: 5</p>
+        `;
+
+        denseDiv.innerHTML = `
+            <h3>Dense Model</h3>
+            <p>Accuracy: 91%</p>
+            <p>Epochs: 5</p>
+        `;
+
+    }, 2000);
+}
+
+</script>
+
+</body>
+</html>

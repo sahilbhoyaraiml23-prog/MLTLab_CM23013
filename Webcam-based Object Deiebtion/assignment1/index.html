@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Webcam Classification</title>
+</head>
+<body>
+
+<h2>Assignment 1: Webcam Classification</h2>
+
+<video id="video" width="400" autoplay playsinline></video>
+<h3 id="result">Prediction: </h3>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+
+<script>
+const video = document.getElementById("video");
+let model;
+
+async function setup() {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+
+    model = await mobilenet.load();
+
+    detect();
+}
+
+async function detect() {
+    const prediction = await model.classify(video);
+    document.getElementById("result").innerText =
+        "Prediction: " + prediction[0].className;
+
+    requestAnimationFrame(detect);
+}
+
+setup();
+</script>
+
+</body>
+</html>

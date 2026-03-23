@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Webcam Detection</title>
+
+<style>
+body {
+    background: #0f2027;
+    color: white;
+    text-align: center;
+    font-family: Arial;
+}
+
+video {
+    border-radius: 10px;
+}
+
+canvas {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#fps {
+    margin-top: 10px;
+    font-size: 18px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎥 Webcam Object Detection</h1>
+
+<video id="video" width="400" height="300" autoplay playsinline></video>
+<canvas id="canvas" width="400" height="300"></canvas>
+
+<div id="fps">FPS: </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+
+<script src="script.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Image Classifier</title>
+
+<style>
+body {
+    font-family: Arial;
+    text-align: center;
+    background: #1e3c72;
+    color: white;
+}
+
+.container {
+    margin-top: 40px;
+}
+
+img {
+    margin-top: 20px;
+    width: 300px;
+    border-radius: 10px;
+}
+
+.result {
+    margin-top: 20px;
+    font-size: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🖼 Image Classification</h1>
+
+<div class="container">
+    <input type="file" id="upload">
+    <br>
+    <img id="image">
+    <div class="result" id="result">Prediction: </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+
+<script src="script.js"></script>
+
+</body>
+</html>

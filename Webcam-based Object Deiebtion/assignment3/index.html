@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FPS Measurement</title>
+</head>
+<body>
+
+<h2>Assignment 3: FPS Analysis</h2>
+
+<video id="video" width="400" autoplay playsinline></video>
+<h3 id="fps">FPS: </h3>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+
+<script>
+const video = document.getElementById("video");
+
+let model;
+let lastTime = performance.now();
+
+async function setup() {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+
+    model = await mobilenet.load();
+    detect();
+}
+
+async function detect() {
+    await model.classify(video);
+
+    let now = performance.now();
+    let fps = 1000 / (now - lastTime);
+    lastTime = now;
+
+    document.getElementById("fps").innerText =
+        "FPS: " + fps.toFixed(2);
+
+    requestAnimationFrame(detect);
+}
+
+setup();
+</script>
+
+</body>
+</html>

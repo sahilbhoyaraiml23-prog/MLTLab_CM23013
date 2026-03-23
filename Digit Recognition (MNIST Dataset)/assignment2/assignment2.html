@@ -1,0 +1,44 @@
+<h3>✍️ Draw Any Digit (0–9)</h3>
+
+<canvas id="drawArea" width="150" height="150" 
+style="border:2px solid #333; background:#000; border-radius:10px;"></canvas>
+
+<br><br>
+
+<button onclick="resetCanvas()">Clear</button>
+<button onclick="detectDigit()">Predict</button>
+
+<h2 id="outputText">Result: -</h2>
+
+<script>
+    const drawArea = document.getElementById('drawArea');
+    const context = drawArea.getContext('2d');
+
+    let isDrawing = false;
+
+    drawArea.addEventListener("mousedown", () => isDrawing = true);
+    drawArea.addEventListener("mouseup", () => isDrawing = false);
+    drawArea.addEventListener("mouseleave", () => isDrawing = false);
+
+    drawArea.addEventListener("mousemove", function(e) {
+        if (!isDrawing) return;
+
+        context.fillStyle = "white";
+        context.beginPath();
+        context.arc(e.offsetX, e.offsetY, 6, 0, Math.PI * 2);
+        context.fill();
+    });
+
+    function resetCanvas() {
+        context.clearRect(0, 0, drawArea.width, drawArea.height);
+        document.getElementById("outputText").innerText = "Result: -";
+    }
+
+    function detectDigit() {
+        // Mock prediction (replace with model later)
+        const digit = Math.floor(Math.random() * 10);
+
+        document.getElementById("outputText").innerText =
+            "Predicted Digit: " + digit;
+    }
+</script>
