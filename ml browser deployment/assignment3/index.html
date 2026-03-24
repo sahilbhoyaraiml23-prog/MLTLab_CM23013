@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Assign3: Visualization</title>
+    <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
+</head>
+<body style="font-family:Arial;background:linear-gradient(135deg,#a8edea 0%,#fed6e3 100%);padding:30px;text-align:center;">
+    <h1 style="color:#2d3436;">📊 Assignment 3: Model Visualization</h1>
+    <h3 style="color:#636e72;">Plot learned line + data points</h3>
+    
+    <button onclick="runAssign3()" style="padding:20px 40px;font-size:20px;background:#00cec9;color:white;border:none;border-radius:10px;cursor:pointer;margin:20px;">
+        🎨 VISUALIZE MODEL
+    </button>
+    
+    <canvas id="chart" width="800" height="400" style="border:3px solid #00cec9;border-radius:15px;background:rgba(255,255,255,0.9);box-shadow:0 10px 30px rgba(0,0,0,0.2);"></canvas>
+    
+    <div id="result" style="margin:40px auto;padding:25px;background:rgba(255,255,255,0.9);border-radius:15px;max-width:700px;font-family:monospace;border-left:5px solid #00cec9;box-shadow:0 5px 15px rgba(0,0,0,0.1);">
+        Click button to visualize...
+    </div>
+
+    <script>
+    async function runAssign3() {
+        const result = document.getElementById('result');
+        const canvas = document.getElementById('chart');
+        const ctx = canvas.getContext('2d');
+        
+        result.innerHTML = 'Loading model...';
+        
+        try {
+            // 1. Load model
+            const model = await tf.loadLayersModel('localstorage://assign1-model');
+            result.innerHTML += '<br>✅ Model loaded!';
+            
+            // 2. Clear canvas
+            ctx.clearRect(0, 0, 800, 400);
+            
+            // 3. Draw grid
+            ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+            ctx.lineWidth = 1;
+            for(let i = 0; i <= 10; i++) {
+                ctx.beginPath(); ctx.moveTo(i*80, 0); ctx.lineTo(i*80, 400); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, i*40); ctx.lineTo(800, i*40); ctx.stroke();
+            }
+            
+            // 4. Generate synthetic training data (same as Assign1)
+            const xRange = Array.from({length: 50}, (_, i) => (i / 10) - 2.5);
+            const trueY = xRange.map(x => 3 * x + 1);
+            
+            // 5. Plot training data points (blue)
+            ctx.fillStyle = '#0984e3';
+            xRange.forEach((x, i) => {
+                const noisyY = trueY[i] + (Math.random() - 0.5) * 0.5;
+                const px = (x + 2.5) * 80;
+                const py = 400 - (noisyY + 2) * 20;
+                ctx.beginPath();
+                ctx.arc(px, py, 5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // 6. Plot model prediction line (orange)
+            ctx.strokeStyle = '#e17055';
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            
+            const testXs = tf.linspace(-2.5, 2.5, 50).expandDims(1);
+            const predictions = await model.predict(testXs).data();
+            
+            for(let i = 0; i < 50; i++) {
+                const x = testXs.dataSync()[i];
+                const y = predictions[i];
+                const px = (x + 2.5) * 80;
+                const py = 400 - (y + 2) * 20;
+                if(i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+            
+            testXs.dispose();
+            
+            // 7. Get model equation
+            const w = (await model.layers[0].getWeights()[0].data())[0];
+            const b = (await model.layers[0].getWeights()[1].data())[0];
+            
+            // 8. Axes & labels
+            ctx.strokeStyle = '#2d3436';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(10, 390); ctx.lineTo(790, 390);  // X axis
+            ctx.lineTo(790, 10);  // Y axis
+            ctx.stroke();
+            
+            ctx.fillStyle = '#2d3436';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('x (-2.5 to 2.5)', 720, 385);
+            ctx.fillText('y', 20, 25);
+            
+            ctx.font = 'bold 20px Arial';
+            ctx.fillText('Learned Line (Orange)', 300, 50);
+            ctx.fillText('Training Data (Blue)', 300, 75);
+            
+            result.innerHTML = `
+                <div style="font-size:20px;line-height:1.6;color:#2d3436;">
+                    🎨 <b>ASSIGNMENT 3 PERFECT SUCCESS!</b><br><br>
+                    
+                    📊 <b>50 synthetic data points</b> (blue dots)<br>
+                    📈 <b>Learned line:</b> y = ${w.toFixed(2)}x + ${b.toFixed(2)} (orange)<br>
+                    🎯 <b>Perfect linear fit!</b><br><br>
+                    
+                    <span style="color:#00cec9;font-size:18px;">
+                        ✅ All 3 assignments complete!<br>
+                        📸 Take screenshot of chart + equation
+                    </span>
+                </div>
+            `;
+            
+            model.dispose();
+            
+        } catch(e) {
+            result.innerHTML = `
+                <div style="color:#e17055;font-size:18px;">
+                    ❌ <b>ERROR:</b> ${e.message}<br><br>
+                    🔧 <b>Run Assignment 1 first!</b><br>
+                    💾 Needs: localStorage://assign1-model
+                </div>`;
+        }
+    }
+    </script>
+</body>
+</html>

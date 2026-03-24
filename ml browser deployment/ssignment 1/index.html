@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Assign1 - PERFECT</title>
+    <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
+    <style>
+        body { 
+            font-family: Arial; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            padding: 50px; 
+            text-align: center; 
+        }
+        button { 
+            padding: 20px 40px; 
+            font-size: 20px; 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            margin: 20px; 
+        }
+        button:hover { background: #45a049; }
+        #status { 
+            margin: 30px auto; 
+            padding: 30px; 
+            background: rgba(255,255,255,0.2); 
+            border-radius: 20px; 
+            max-width: 700px; 
+            font-family: monospace; 
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>📈 Assignment 1: Linear Regression</h1>
+    <h3>tf.sequential() + tf.layers.dense() + Synthetic Data</h3>
+    
+    <button onclick="runAssign1()">🚀 RUN ASSIGNMENT 1</button>
+    <div id="status">👆 Click to train model (1 second)</div>
+
+    <script>
+    async function runAssign1() {
+        const status = document.getElementById('status');
+        status.innerHTML = '🔄 Step 1/6: Generating data...';
+        
+        try {
+            // ✅ FIXED: Proper 2D array format
+            const xData = [];
+            const yData = [];
+            
+            // Generate y = 3x + 1 + noise
+            for(let i = 0; i < 50; i++) {
+                const x = (i / 10) - 2.5;  // -2.5 to 2.0
+                const y = 3 * x + 1 + (Math.random() - 0.5) * 0.5;
+                xData.push([x]);
+                yData.push([y]);
+            }
+            
+            const xs = tf.tensor2d(xData);  // [[x1],[x2],...]
+            const ys = tf.tensor2d(yData);  // [[y1],[y2],...]
+            
+            status.innerHTML += '<br>✅ Step 2/6: 50 samples ready';
+            
+            // Model
+            const model1 = tf.sequential({
+                layers: [
+                    tf.layers.dense({
+                        inputShape: [1],
+                        units: 1,
+                        useBias: true
+                    })
+                ]
+            });
+            
+            model1.compile({
+                optimizer: tf.train.sgd(0.02),
+                loss: 'meanSquaredError'
+            });
+            
+            status.innerHTML += '<br>✅ Step 3/6: Model created';
+            
+            // Train
+            status.innerHTML += '<br>✅ Step 4/6: Training 100 epochs...';
+            await model1.fit(xs, ys, { epochs: 100 });
+            
+            status.innerHTML += '<br>✅ Step 5/6: Testing prediction...';
+            
+            // Test
+            const testInput = tf.tensor2d([[1.5]]);
+            const prediction = model1.predict(testInput);
+            const predValue = await prediction.data();
+            
+            // Loss
+            const lossTensor = await model1.evaluate(xs, ys);
+            const lossValue = await lossTensor.data();
+            
+            // Save
+            await model1.save('localstorage://assign1-model');
+            
+            // Weights
+            const weightTensor = model1.layers[0].getWeights()[0];
+            const biasTensor = model1.layers[0].getWeights()[1];
+            const weight = await weightTensor.data();
+            const bias = await biasTensor.data();
+            
+            status.innerHTML = `
+                <div style="font-size: 22px; line-height: 1.6;">
+                    🎉 <b>ASSIGNMENT 1 PERFECT SUCCESS!</b><br><br>
+                    
+                    📊 <b>50 synthetic samples:</b> y = 3x + 1 + noise<br>
+                    🎯 <b>Model learned:</b> y = ${weight[0].toFixed(2)}x + ${bias[0].toFixed(2)}<br>
+                    🔮 <b>Test result:</b> x=1.5 → ŷ=${predValue[0].toFixed(2)}<br>
+                    📉 <b>Final Loss (MSE):</b> ${lossValue[0].toFixed(4)}<br>
+                    💾 <b>Model saved successfully</b><br><br>
+                    
+                    <span style="color: #4CAF50; font-size: 18px;">
+                        ✅ Ready for Assignment 2 & 3!<br>
+                        👉 Check DevTools → Application → LocalStorage
+                    </span>
+                </div>
+            `;
+            
+            // Cleanup
+            xs.dispose();
+            ys.dispose();
+            testInput.dispose();
+            prediction.dispose();
+            lossTensor.dispose();
+            
+        } catch (error) {
+            status.innerHTML = `
+                ❌ <b>ERROR:</b> ${error.message}<br>
+                🔧 <b>Solution:</b> Use Live Server (VS Code extension)<br>
+                📱 Press F12 → Console → Screenshot error
+            `;
+            console.error('DETAILED ERROR:', error);
+        }
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Assign2 - SIMPLE</title>
+    <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
+</head>
+<body style="font-family:Arial;background:#ffeaa7;padding:50px;text-align:center;">
+    <h1 style="color:#2d3436;">🔄 Assignment 2: Model Reload</h1>
+    <button onclick="testModel()" style="padding:20px 40px;font-size:20px;background:#00b894;color:white;border:none;border-radius:10px;cursor:pointer;">
+        📂 LOAD & TEST MODEL
+    </button>
+    <div id="result" style="margin:40px auto;padding:30px;background:#fdcb6e;border-radius:15px;max-width:600px;font-family:monospace;font-size:16px;border:3px solid #00b894;">
+        Click button to test...
+    </div>
+
+    <script>
+    async function testModel() {
+        const result = document.getElementById('result');
+        result.innerHTML = 'Loading model...';
+        
+        try {
+            // Load model
+            const model = await tf.loadLayersModel('localstorage://assign1-model');
+            result.innerHTML += '<br>✅ Model loaded!';
+            
+            // Simple tests
+            const tests = [-2, -1, 0, 1, 2, 3];
+            let output = '';
+            
+            for(let x of tests) {
+                const xs = tf.tensor2d([[x]]);
+                const ys = model.predict(xs);
+                const y = (await ys.data())[0];
+                output += `<br>x = ${x} → y = ${y.toFixed(2)}`;
+                xs.dispose();
+                ys.dispose();
+            }
+            
+            // Get weights
+            const w = (await model.layers[0].getWeights()[0].data())[0];
+            const b = (await model.layers[0].getWeights()[1].data())[0];
+            
+            result.innerHTML = `
+                <b style="color:#00b894;font-size:24px;">✅ ASSIGNMENT 2 SUCCESS!</b><br><br>
+                📂 Model reloaded from localStorage<br>
+                📏 Equation: <b>y = ${w.toFixed(2)}x + ${b.toFixed(2)}</b><br><br>
+                🔮 Predictions:<br>
+                ${output}<br><br>
+                <span style="color:#00b894;">🎉 Ready for Assignment 3!</span>
+            `;
+            
+            model.dispose();
+            
+        } catch(e) {
+            result.innerHTML = `
+                <b style="color:#e17055;">❌ ERROR: ${e.message}</b><br><br>
+                <b>Fix:</b><br>
+                1. Run Assignment 1 first<br>
+                2. Use Live Server<br>
+                3. Same browser tab
+            `;
+        }
+    }
+    </script>
+</body>
+</html>

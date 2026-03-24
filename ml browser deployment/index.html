@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linear Regression - Synthetic Data</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        button {
+            padding: 12px 24px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover { background: #45a049; }
+        .train-btn { background: #2196F3; }
+        .load-btn { background: #FF9800; }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .success { background: rgba(76,175,80,0.3); }
+        .prediction {
+            font-size: 28px;
+            background: rgba(255,152,0,0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        canvas {
+            border: 2px solid white;
+            border-radius: 10px;
+            margin: 20px 0;
+            background: rgba(255,255,255,0.1);
+        }
+        #logs {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            height: 150px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📈 Linear Regression - Synthetic Data</h1>
+        <h2>AIM: Train → Save → Load → Predict with tf.sequential()</h2>
+
+        <div class="section">
+            <button class="train-btn" onclick="trainModel()">🚀 Train Model</button>
+            <button onclick="saveModel()">💾 Save Model</button>
+            <button class="load-btn" onclick="loadModel()">📂 Load Model</button>
+            <div id="status" class="status">Ready to train</div>
+        </div>
+
+        <div class="section">
+            <h3>Predict y for x:</h3>
+            <input type="number" id="inputX" value="2.5" step="0.1">
+            <button onclick="predict()">🔮 Predict</button>
+            <div id="prediction" class="prediction">Enter x value</div>
+        </div>
+
+        <canvas id="chart" width="800" height="400"></canvas>
+        
+        <div class="section">
+            <h3>Training Logs:</h3>
+            <pre id="logs">Waiting for training...</pre>
+        </div>
+    </div>
+
+    <script src="regression.js"></script>
+</body>
+</html>
